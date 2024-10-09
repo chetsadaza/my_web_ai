@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
+  <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: roboto;
+      margin: 2em;
+      color: #3d3d3d;
+      --mdc-theme-primary: #007f8b;
+      --mdc-theme-on-primary: #f1f3f4;
+    }
+    h1 { color: #007f8b; }
+    h2 { clear: both; }
+    #im_result, #video_result { clear: both; margin: auto; text-align: center; }
+    video { clear: both; display: block; }
+    section { opacity: 1; transition: opacity 500ms ease-in-out; }
+    .mdc-button.mdc-button--raised.removed { display: none; }
+    .removed { display: none; }
+    .invisible { opacity: 0.2; }
+    .videoView, .embedOnClick, .uploadImage { position: relative; float: left; width: 48%; margin: 2% 1%; cursor: pointer; }
+    .videoView p, .embedOnClick p { padding: 5px; background-color: #007f8b; color: #fff; z-index: 2; font-size: 12px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .highlighter { background: rgba(0, 255, 0, 0.25); border: 1px dashed #fff; z-index: 1; position: absolute; }
+    .embedOnClick { z-index: 0; }
+    .embedOnClick img, uploadImage img { width: 100%; }
+    #video_result, #im_result { padding-top: 5px; padding-bottom: 5px; background-color: #007f8b; color: #fff; z-index: 2; margin: 0; width: 100%; font-size: calc(8px + 1.2vw); }
+     /*
+CSS @property and the New Style
+https://ryanmulligan.dev/blog/css-property-new-style/
+*/
+@import url("https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,500&display=swap");
+
+:root {
+  --shiny-cta-bg: #000000;
+  --shiny-cta-bg-subtle: #1a1818;
+  --shiny-cta-fg: #ffffff;
+  --shiny-cta-highlight: blue;
+  --shiny-cta-highlight-subtle: #8484ff;
+}
+
+@property --gradient-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@property --gradient-angle-offset {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@property --gradient-percent {
+  syntax: "<percentage>";
+  initial-value: 5%;
+  inherits: false;
+}
+
+@property --gradient-shine {
+  syntax: "<color>";
+  initial-value: white;
+  inherits: false;
+}
+
+.shiny-cta {
+  --animation: gradient-angle linear infinite;
+  --duration: 3s;
+  --shadow-size: 2px;
+  isolation: isolate;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  outline-offset: 4px;
+  padding: 1.25rem 2.5rem;
+  font-family: inherit;
+  font-size: 1.125rem;
+  line-height: 1.2;
+  border: 1px solid transparent;
+  border-radius: 360px;
+  color: var(--shiny-cta-fg);
+  background: linear-gradient(var(--shiny-cta-bg), var(--shiny-cta-bg))
+      padding-box,
+    conic-gradient(
+        from calc(var(--gradient-angle) - var(--gradient-angle-offset)),
+        transparent,
+        var(--shiny-cta-highlight) var(--gradient-percent),
+        var(--gradient-shine) calc(var(--gradient-percent) * 2),
+        var(--shiny-cta-highlight) calc(var(--gradient-percent) * 3),
+        transparent calc(var(--gradient-percent) * 4)
+      )
+      border-box;
+  box-shadow: inset 0 0 0 1px var(--shiny-cta-bg-subtle);
+
+  &::before,
+  &::after,
+  span::before {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset-inline-start: 50%;
+    inset-block-start: 50%;
+    translate: -50% -50%;
+    z-index: -1;
+  }
+
+  &:active {
+    translate: 0 1px;
+  }
+}
+
+/* Dots pattern */
+.shiny-cta::before {
+  --size: calc(100% - var(--shadow-size) * 3);
+  --position: 2px;
+  --space: calc(var(--position) * 2);
+  width: var(--size);
+  height: var(--size);
+  background: radial-gradient(
+      circle at var(--position) var(--position),
+      white calc(var(--position) / 4),
+      transparent 0
+    )
+    padding-box;
+  background-size: var(--space) var(--space);
+  background-repeat: space;
+  mask-image: conic-gradient(
+    from calc(var(--gradient-angle) + 45deg),
+    black,
+    transparent 10% 90%,
+    black
+  );
+  border-radius: inherit;
+  opacity: 0.4;
+  z-index: -1;
+}
+
+/* Inner shimmer */
+.shiny-cta::after {
+  --animation: shimmer linear infinite;
+  width: 100%;
+  aspect-ratio: 1;
+  background: linear-gradient(
+    -50deg,
+    transparent,
+    var(--shiny-cta-highlight),
+    transparent
+  );
+  mask-image: radial-gradient(circle at bottom, transparent 40%, black);
+  opacity: 0.6;
+}
+
+.shiny-cta span {
+  z-index: 1;
+
+  &::before {
+    --size: calc(100% + 1rem);
+    width: var(--size);
+    height: var(--size);
+    box-shadow: inset 0 -1ex 2rem 4px var(--shiny-cta-highlight);
+    opacity: 0;
+  }
+}
+
+/* Animate */
+.shiny-cta {
+  --transition: 800ms cubic-bezier(0.25, 1, 0.5, 1);
+  transition: var(--transition);
+  transition-property: --gradient-angle-offset, --gradient-percent,
+    --gradient-shine;
+
+  &,
+  &::before,
+  &::after {
+    animation: var(--animation) var(--duration),
+      var(--animation) calc(var(--duration) / 0.4) reverse paused;
+    animation-composition: add;
+  }
+
+  span::before {
+    transition: opacity var(--transition);
+    animation: calc(var(--duration) * 1.5) breathe linear infinite;
+  }
+}
+
+.shiny-cta:is(:hover, :focus-visible) {
+  --gradient-percent: 20%;
+  --gradient-angle-offset: 95deg;
+  --gradient-shine: var(--shiny-cta-highlight-subtle);
+
+  &,
+  &::before,
+  &::after {
+    animation-play-state: running;
+  }
+
+  span::before {
+    opacity: 1;
+  }
+}
+
+@keyframes gradient-angle {
+  to {
+    --gradient-angle: 360deg;
+  }
+}
+
+@keyframes shimmer {
+  to {
+    rotate: 360deg;
+  }
+}
+
+@keyframes breathe {
+  from,
+  to {
+    scale: 1;
+  }
+  50% {
+    scale: 1.2;
+  }
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  display: grid;
+  place-items: center;
+  color: white;
+  background: #02040c;
+  font-family: "Inter", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+}
+  </style>
+  <title>MediaPipe การคำนวณความคล้ายของรูปภาพ</title>
+</head>
+<button class="shiny-cta" onclick="window.location.href='home.html';">
+  <span>Back to main page</span>
+</button>
+<body>
+
+<h1>คำนวณความคล้ายของรูปภาพด้วย MediaPipe Image Embedder</h1>
+<section id="demos" class="invisible">
+  <h2>ตัวอย่าง: การฝังข้อมูลของรูปภาพ</h2>
+  <p><b>คลิกที่รูปภาพด้านล่าง</b> เพื่อคำนวณความคล้ายระหว่างสองรูปภาพ</p>
+  <div style="display: block;">
+    <div class="embedOnClick">
+      <img src="https://assets.codepen.io/9177687/dog_flickr_publicdomain.jpeg" width="100%" crossorigin="anonymous" title="คลิกเพื่อคำนวณความคล้ายด้วย embedding และ cosine similarity" />
+      <p id="embed1" class="embedding removed"></p>
+    </div>
+    <div class="embedOnClick">
+      <img src="https://assets.codepen.io/9177687/cat_flickr_publicdomain.jpeg" width="100%" crossorigin="anonymous" title="คลิกเพื่อคำนวณความคล้ายด้วย embedding และ cosine similarity" />
+      <p id="embed2" class="embedding removed"></p>
+    </div>
+  </div>
+
+  <p id="im_result" class="removed"></p>
+
+  <h2>ตัวอย่าง: คำนวณความคล้ายของวิดีโอผ่านเว็บแคมอย่างต่อเนื่อง</h2>
+  <p>อัปโหลดรูปภาพเพื่อใช้เป็นภาพอ้างอิงและคำนวณความคล้ายกับเฟรมของวิดีโอจากเว็บแคมของคุณ! คลิกที่ <b>อัปโหลดรูปภาพ</b> และจากนั้นคลิก <b>เปิดใช้งานเว็บแคม</b> และยอมรับการเข้าถึงเว็บแคม</p>
+  <div class="uploadImage">
+    <button id="uploadImageButton" class="mdc-button mdc-button--raised" onclick="document.getElementById('getFile').click()">
+      <span class="mdc-button__ripple"></span>
+      <span class="mdc-button__label">อัปโหลดรูปภาพ</span>
+    </button>
+    <input id="getFile" type="file" accept="image/*" style="display:none">
+    <img id="uploadImage" width="100%"></img>
+  </div>
+  <div class="videoView">
+    <button id="webcamButton" class="mdc-button mdc-button--raised">
+      <span class="mdc-button__ripple"></span>
+      <span class="mdc-button__label">เปิดใช้งานเว็บแคม</span>
+    </button>
+    <video id="webcam" autoplay playsinline></video>
+  </div>
+  <p id="video_result" class="removed"></p>
+</section>
+
+<script type="module">
+  import {
+    ImageEmbedder,
+    FilesetResolver
+  } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0";
+
+  const demosSection = document.getElementById("demos");
+  let imageEmbedder;
+  let runningMode = "IMAGE";
+
+  const createImageEmbedder = async () => {
+    const vision = await FilesetResolver.forVisionTasks(
+      "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm"
+    );
+
+    imageEmbedder = await ImageEmbedder.createFromOptions(vision, {
+      baseOptions: {
+        modelAssetPath: `https://storage.googleapis.com/mediapipe-models/image_embedder/mobilenet_v3_small/float32/1/mobilenet_v3_small.tflite`
+      },
+      runningMode: runningMode
+    });
+
+    demosSection.classList.remove("invisible");
+  };
+  createImageEmbedder();
+
+  const imageContainers = document.getElementsByClassName("embedOnClick");
+  for (let imageContainer of imageContainers) {
+    imageContainer.children[0].addEventListener("click", handleClick);
+  }
+
+  const imageResult = document.getElementById("im_result");
+  const videoResult = document.getElementById("video_result");
+  const embedding1 = document.getElementById("embed1");
+  const embedding2 = document.getElementById("embed2");
+
+  async function handleClick(event) {
+    if (!imageEmbedder) {
+      console.log("รอให้โหลด Image Embedder เสร็จก่อนคลิก");
+      return;
+    }
+
+    if (runningMode === "VIDEO") {
+      runningMode = "IMAGE";
+      await imageEmbedder.setOptions({ runningMode: runningMode });
+    }
+
+    if (imageContainers.length === 2) {
+      try {
+        const imageEmbedderResult0 = await imageEmbedder.embed(imageContainers[0].children[0]);
+        const imageEmbedderResult1 = await imageEmbedder.embed(imageContainers[1].children[0]);
+
+        updateEmbeddings(imageEmbedderResult0, embedding1);
+        updateEmbeddings(imageEmbedderResult1, embedding2);
+
+        const similarity = ImageEmbedder.cosineSimilarity(imageEmbedderResult0.embeddings[0], imageEmbedderResult1.embeddings[0]);
+        imageResult.className = "";
+        imageResult.innerText = "ความคล้ายของรูปภาพ: " + similarity.toFixed(2);
+      } catch (error) {
+        console.error("เกิดข้อผิดพลาดขณะทำการฝังข้อมูล: ", error);
+        imageResult.innerText = "เกิดข้อผิดพลาดในการคำนวณความคล้าย";
+      }
+    }
+  }
+
+  function updateEmbeddings(embedderResult, embeddingElement) {
+    const truncatedEmbedding = embedderResult.embeddings[0].floatEmbedding.slice(0, 4);
+    embeddingElement.className = "embedding";
+    embeddingElement.innerText = `Embedding แบบ float: ${truncatedEmbedding}...`;
+  }
+
+  const video = document.getElementById("webcam");
+  const getFile = document.getElementById("getFile");
+  let uploadImageEmbedderResult;
+
+  getFile.addEventListener("change", preview_image, false);
+
+  function preview_image(event) {
+    let reader = new FileReader();
+    const output = document.getElementById("uploadImage");
+    reader.onload = function () {
+      output.src = reader.result;
+      setTimeout(async function () {
+        if (runningMode === "VIDEO") {
+          runningMode = "IMAGE";
+          await imageEmbedder.setOptions({ runningMode: runningMode });
+        }
+        uploadImageEmbedderResult = await imageEmbedder.embed(output);
+        document.getElementById("uploadImageButton").classList.add("removed");
+      }, 100);
+    };
+    reader.readAsDataURL(event.target.files[0]);
+  }
+
+  function hasGetUserMedia() {
+    return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+  }
+
+  if (hasGetUserMedia()) {
+    const enableWebcamButton = document.getElementById("webcamButton");
+    enableWebcamButton.addEventListener("click", enableCam);
+  } else {
+    console.warn("getUserMedia() ไม่รองรับในเบราว์เซอร์ของคุณ");
+  }
+
+  async function enableCam(event) {
+    if (!imageEmbedder) {
+      alert("กำลังโหลด ImageEmbedder");
+      return;
+    }
+
+    event.target.classList.add("removed");
+
+    const constraints = {
+      video: true
+    };
+
+    navigator.mediaDevices
+      .getUserMedia(constraints)
+      .then(function (stream) {
+        video.srcObject = stream;
+        video.addEventListener("loadeddata", predictWebcam);
+      })
+      .catch((err) => {
+        console.error(err);
+        alert("เกิดข้อผิดพลาดในการเข้าถึงเว็บแคม: " + err.message);
+      });
+  }
+
+  async function predictWebcam() {
+    if (runningMode === "IMAGE") {
+      runningMode = "VIDEO";
+      await imageEmbedder.setOptions({ runningMode: runningMode });
+    }
+
+    const startTimeMs = performance.now();
+    const embedderResult = await imageEmbedder.embedForVideo(video, startTimeMs);
+
+    if (uploadImageEmbedderResult != null) {
+      const similarity = ImageEmbedder.cosineSimilarity(
+        uploadImageEmbedderResult.embeddings[0],
+        embedderResult.embeddings[0]
+      );
+      videoResult.className = "";
+      videoResult.innerText = "ความคล้ายของรูปภาพ: " + similarity.toFixed(2);
+    }
+
+    window.requestAnimationFrame(predictWebcam);
+  }
+</script>
+</body>
+</html>
